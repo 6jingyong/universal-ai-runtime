@@ -3,16 +3,20 @@ import path from 'node:path';
 import { chromium } from 'playwright';
 
 export class PlaywrightHost {
-  constructor({ headless = true, timeoutMs = 30_000 } = {}) {
+  constructor({ headless = true, timeoutMs = 30_000, executablePath = process.env.CHROME_PATH || null } = {}) {
     this.headless = headless;
     this.timeoutMs = timeoutMs;
+    this.executablePath = executablePath;
     this.browser = null;
     this.context = null;
     this.page = null;
   }
 
   async start() {
-    this.browser = await chromium.launch({ headless: this.headless });
+    this.browser = await chromium.launch({
+      headless: this.headless,
+      ...(this.executablePath ? { executablePath: this.executablePath } : {})
+    });
     this.context = await this.browser.newContext({
       viewport: { width: 1280, height: 900 },
       locale: 'en-US'
