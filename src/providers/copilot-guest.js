@@ -83,8 +83,10 @@ export class CopilotGuestProvider extends WebProvider {
     while (Date.now() - startedAt < maxMs) {
       await host.page.waitForTimeout(350);
 
-      const currentUrl = host.page.url();
-      const title = await host.page.title().catch(() => '');
+      const currentUrl = typeof host.page.url === 'function' ? host.page.url() : '';
+      const title = typeof host.page.title === 'function'
+        ? await host.page.title().catch(() => '')
+        : '';
       if (/login|signin|sign-in/i.test(currentUrl) || /sign in/i.test(title)) {
         const error = new Error(`Copilot anonymous prompt requires authentication; redirected to ${currentUrl}`);
         error.code = 'AUTH_REQUIRED';
