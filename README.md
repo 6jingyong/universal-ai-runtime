@@ -2,37 +2,40 @@
 
 Early prototype for a user-authorized AI runtime that lets ordinary apps reuse AI access the user already has, with web sessions as the first transport.
 
-The first MVP is intentionally narrow: determine whether a public AI web surface can act as a zero-config text backend without API keys, MCP, or private browser-cookie extraction.
+The first MVP is deliberately narrow: provide a zero-API-key text backend from official AI web surfaces, without importing private browser cookies, requiring MCP, or fighting anti-bot systems.
 
-## First live result: Copilot
+## v0 scope
 
-As of the current E2E probe, `https://copilot.cloud.microsoft/` exposes a signed-out prompt box (`#unauth-prompt-input`), but submitting a prompt redirects to Microsoft OAuth sign-in. The runtime therefore classifies the current Copilot signed-out channel as:
+Only two anonymous web providers are active candidates:
 
 ```text
-ui_available: true
-auth_required: true
-anonymous_chat: false
+China Mainland  → Qwen Web
+Global          → Gemini Web
 ```
 
-This is useful rather than a dead end: provider capability must be detected from live behavior instead of assumed from documentation or branding.
+This is a product default, not a hard geo lock. The caller can explicitly override the provider.
 
-## Current prototype
+Gemini has already completed a real signed-out end-to-end inference on a fresh GitHub Actions Chrome session. Qwen passed the generic signed-out surface test but showed a normal first-party age-confirmation dialog; the dedicated adapter handles that shallow gate and is validated by the live E2E workflow.
+
+Other providers remain in the validation log as research evidence, but they are not part of the v0 runtime path.
+
+## Runtime shape
 
 ```text
-App / CLI
-   ↓
-CopilotGuestProvider
-   ↓
+App
+ ↓
+AIRuntime.ask(prompt)
+ ↓
+region / explicit provider
+ ├─ global → GeminiGuestProvider
+ └─ cn     → QwenGuestProvider
+ ↓
 Web Host
-   ↓
-copilot.cloud.microsoft
-   ↓
-capability probe
-   ├─ anonymous response → anonymous_chat
-   └─ OAuth redirect      → auth_required
+ ↓
+official provider web page
 ```
 
-The provider and browser host are separate on purpose. Provider semantics should later be reusable across:
+Provider semantics and browser mechanics remain separate so the same provider logic can later be reused across:
 
 - desktop Playwright/CDP hosts;
 - browser-extension hosts;
@@ -47,41 +50,57 @@ Requires Node.js 20+.
 npm install
 npx playwright install chromium
 npm test
-npm run probe -- "Reply with exactly: COPILOT_GUEST_OK"
 ```
 
-If a system Chrome is available, set `CHROME_PATH` to avoid downloading another browser.
-
-By default the probe is headless. Use a visible browser with:
+Global / Gemini:
 
 ```bash
-HEADLESS=0 npm run probe -- "Reply with exactly: COPILOT_GUEST_OK"
+npm run probe -- --region=global "What is 137 + 286?"
 ```
+
+China Mainland / Qwen:
+
+```bash
+npm run probe -- --region=cn "137 + 286 等于多少？只回答数字。"
+```
+
+Explicit override:
+
+```bash
+npm run probe -- --provider=qwen "你好"
+npm run probe -- --provider=gemini "hello"
+```
+
+If a system Chrome is available, set `CHROME_PATH` to avoid downloading another browser. Set `HEADLESS=0` to show the browser.
 
 ## Tests
 
 ```bash
 npm run check
 npm test
-npm run test:e2e
+TARGET=gemini npm run test:e2e
+TARGET=qwen npm run test:e2e
 ```
 
-The E2E test opens the real public Copilot surface without authentication and classifies the live channel. `AUTH_REQUIRED` is a valid capability result; unexpected failures still store a screenshot, page HTML, URL, and title under `artifacts/`.
+Pull requests automatically run the real anonymous E2E only for Gemini and Qwen. The broad 16-provider survey and the Copilot regression probe remain available as manual workflows rather than running on every change.
 
-GitHub Actions runs the same live probe on pull requests using the runner's preinstalled Chrome.
+Diagnostics are stored under `artifacts/` when a live E2E fails.
+
+## Validation rule
+
+A visible prompt box is not evidence of anonymous inference. A channel only counts as working after a real prompt receives a real model response without authentication.
+
+Every Provider/Channel experiment — including failures — is recorded in `docs/validation-log.md`.
 
 ## Deliberate non-goals for v0
 
-- no account-cookie extraction;
 - no API keys;
 - no MCP;
-- no tools or skills;
+- no account-cookie extraction;
 - no CAPTCHA or anti-abuse bypass;
-- no attempt to disguise automation as a human browser.
-
-## Next validation target
-
-Add another signed-out provider, likely Gemini or ChatGPT, using the same `WebProvider` contract. A real anonymous response from a second provider would validate the positive zero-config path; Copilot already validates the `auth_required` capability path.
+- no stealth automation;
+- no tools or skills yet;
+- no attempt to support every model provider.
 
 ## License
 
