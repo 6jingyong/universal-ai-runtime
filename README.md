@@ -15,7 +15,7 @@ Global          → Gemini Web
 
 This is a product default, not a hard geo lock. The caller can explicitly override the provider.
 
-Gemini has already completed a real signed-out end-to-end inference on a fresh GitHub Actions Chrome session. Qwen passed the generic signed-out surface test but showed a normal first-party age-confirmation dialog; the dedicated adapter handles that shallow gate and is validated by the live E2E workflow.
+Gemini has already completed a real signed-out end-to-end inference on a fresh GitHub Actions Chrome session. Qwen passed the generic signed-out surface test but showed a normal first-party age-confirmation dialog; the dedicated adapter handles that shallow gate and the live E2E workflow now tests it directly.
 
 Other providers remain in the validation log as research evidence, but they are not part of the v0 runtime path.
 
