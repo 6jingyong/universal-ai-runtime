@@ -128,7 +128,7 @@ This is sufficient to validate the central MVP hypothesis: an ordinary applicati
 
 Qwen remains interesting despite the generic probe ending as `unknown`. The prompt surface loaded and accepted the prompt, but the site then displayed a normal first-party age-confirmation dialog asking for a birth year. This is not a CAPTCHA, anti-bot challenge, or login wall. Under the project's no-fighting rule, the baseline did not add Qwen-specific logic to complete the dialog.
 
-Decision: keep Qwen as the most interesting candidate after Gemini, but do not call it a confirmed anonymous backend until a later shallow test completes the age gate and receives a model answer.
+Decision: keep Qwen as the China Mainland v0 candidate, but do not call it a confirmed anonymous backend until the dedicated shallow test completes the age gate and receives a model answer.
 
 ### Kimi and Yuanbao note
 
@@ -148,7 +148,7 @@ ChatGPT, Claude, and Mistral returned `Just a moment...` challenge pages to the 
 For the first working anonymous Web Adapter:
 
 1. **Gemini first** — already proven end-to-end with no provider-specific repair.
-2. **Qwen second only if we want another anonymous provider** — the only observed obstacle is a normal age-confirmation gate, but anonymous inference is not yet proven.
+2. **Qwen second** — selected as the China Mainland v0 candidate; the only observed obstacle is a normal age-confirmation gate, but anonymous inference is not yet proven.
 3. Do not spend MVP time fighting challenge pages, regional blocks, forced-login flows, or promotional/update overlays.
 4. Providers classified `account_required` remain useful later when the Runtime adds user-authorized account sessions; they are not failures of the broader architecture.
 
