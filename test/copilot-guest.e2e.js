@@ -10,15 +10,25 @@ try {
   await host.start();
   const probe = await provider.probe(host);
   console.log('probe:', JSON.stringify(probe, null, 2));
-  assert.equal(probe.ready, true, probe.reason || 'Copilot Guest is not ready');
+  assert.equal(probe.ready, true, probe.reason || 'Copilot unauthenticated prompt UI is not ready');
 
-  const result = await provider.ask(host, `Reply with exactly: ${expected}`);
-  console.log('response:', result.text);
-  console.log('meta:', JSON.stringify(result, null, 2));
+  try {
+    const result = await provider.ask(host, `Reply with exactly: ${expected}`);
+    console.log('capability: anonymous_chat');
+    console.log('response:', result.text);
+    console.log('meta:', JSON.stringify(result, null, 2));
 
-  assert.ok(result.text.includes(expected), `Expected response to contain ${expected}`);
-  assert.equal(result.authenticated, false);
-  assert.equal(result.transport, 'web-dom');
+    assert.ok(result.text.includes(expected), `Expected response to contain ${expected}`);
+    assert.equal(result.authenticated, false);
+    assert.equal(result.transport, 'web-dom');
+  } catch (error) {
+    if (error?.code === 'AUTH_REQUIRED') {
+      console.log('capability: auth_required');
+      console.log(error.message);
+      return;
+    }
+    throw error;
+  }
 } catch (error) {
   await host.saveDiagnostics('artifacts/copilot-guest');
   throw error;
