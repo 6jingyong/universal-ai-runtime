@@ -25,9 +25,9 @@ try {
     if (error?.code === 'AUTH_REQUIRED') {
       console.log('capability: auth_required');
       console.log(error.message);
-      return;
+    } else {
+      throw error;
     }
-    throw error;
   }
 } catch (error) {
   await host.saveDiagnostics('artifacts/copilot-guest');
