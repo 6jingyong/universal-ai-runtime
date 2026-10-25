@@ -1,0 +1,68 @@
+name: Mainstream Web Survey
+
+on:
+  pull_request:
+    paths:
+      - 'test/web-survey.e2e.js'
+      - 'package.json'
+      - '.github/workflows/web-survey.yml'
+      - 'docs/validation-log.md'
+  workflow_dispatch:
+
+jobs:
+  survey:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        target:
+          - chatgpt
+          - gemini
+          - claude
+          - grok
+          - copilot
+          - perplexity
+          - poe
+          - mistral
+          - meta
+          - deepseek
+          - qwen
+          - kimi
+          - zai
+          - minimax
+          - doubao
+          - yuanbao
+
+    env:
+      CHROME_PATH: /usr/bin/google-chrome
+      TARGET: ${{ matrix.target }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Verify system Chrome
+        run: google-chrome --version
+
+      - name: Run signed-out web probe
+        run: npm run survey:web
+
+      - name: Upload probe result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-survey-${{ matrix.target }}
+          path: artifacts/web-survey/${{ matrix.target }}/
+          if-no-files-found: warn
+          retention-days: 7
