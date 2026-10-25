@@ -35,6 +35,29 @@ A visible input surface does not count as anonymous inference. A channel is only
 
 ---
 
+## 2026-10-26 — v0 provider scope decision
+
+Based on the mainstream signed-out baseline below, the first product path is intentionally limited to two web providers:
+
+```text
+China Mainland  → Qwen Web
+Global          → Gemini Web
+```
+
+This is a routing default rather than a hard geographic restriction. The runtime allows explicit provider override and does not perform IP-based geolocation in v0.
+
+Implementation added on the validation branch:
+
+- `GeminiGuestProvider` for the already-proven anonymous Gemini web path;
+- `QwenGuestProvider` with only one provider-specific concession: handling Qwen's normal first-party age-confirmation dialog;
+- `AIRuntime` with `global → gemini` and `cn → qwen` routing;
+- a two-provider live E2E workflow;
+- the broad 16-provider survey and Copilot regression were moved to manual workflows so normal development does not keep probing providers we are not prioritizing.
+
+Qwen remains **unconfirmed as anonymous inference** until the dedicated live E2E completes a real answer after the age gate. Do not promote it to `anonymous_chat` merely because the dedicated adapter exists.
+
+---
+
 ## 2026-10-26 — Mainstream signed-out web baseline
 
 ### Purpose
