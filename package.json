@@ -1,0 +1,16 @@
+{
+  "name": "universal-ai-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Prototype runtime for reusing user-accessible AI web sessions across apps.",
+  "scripts": {
+    "probe": "node src/cli.js",
+    "check": "node --check src/cli.js && node --check src/core/web-provider.js && node --check src/hosts/playwright-host.js && node --check src/providers/copilot-guest.js && node --check test/copilot-guest.unit.js && node --check test/copilot-guest.e2e.js",
+    "test": "node test/copilot-guest.unit.js",
+    "test:e2e": "node test/copilot-guest.e2e.js"
+  },
+  "dependencies": {
+    "playwright": "^1.57.0"
+  }
+}
