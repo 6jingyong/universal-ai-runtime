@@ -1,27 +1,31 @@
 import { PlaywrightHost } from './hosts/playwright-host.js';
-import { CopilotGuestProvider } from './providers/copilot-guest.js';
+import { AIRuntime } from './runtime.js';
 
-const prompt = process.argv.slice(2).join(' ').trim() || 'Reply with exactly: COPILOT_GUEST_OK';
+const args = process.argv.slice(2);
+const prompt = args.filter((arg) => !arg.startsWith('--')).join(' ').trim() || 'What is 137 + 286? Reply with digits only.';
+const providerArg = args.find((arg) => arg.startsWith('--provider='));
+const regionArg = args.find((arg) => arg.startsWith('--region='));
+const provider = providerArg?.split('=')[1] || process.env.PROVIDER || 'auto';
+const region = regionArg?.split('=')[1] || process.env.REGION || 'global';
 const headless = process.env.HEADLESS !== '0';
+
 const host = new PlaywrightHost({ headless });
-const provider = new CopilotGuestProvider();
+const runtime = new AIRuntime({ host, region, provider });
 
 try {
   await host.start();
-  const probe = await provider.probe(host);
-  console.log('probe:', JSON.stringify(probe, null, 2));
-
-  if (!probe.ready) {
-    await host.saveDiagnostics();
-    process.exitCode = 2;
-  } else {
-    const result = await provider.ask(host, prompt);
-    console.log('\nresponse:\n', result.text);
-    console.log('\nmeta:', JSON.stringify({ elapsedMs: result.elapsedMs, transport: result.transport }, null, 2));
-  }
+  console.log('route:', JSON.stringify({ region, provider, selected: runtime.selectedProviderId() }, null, 2));
+  const result = await runtime.ask(prompt);
+  console.log('\nresponse:\n', result.text);
+  console.log('\nmeta:', JSON.stringify({
+    provider: result.provider,
+    channel: result.channel,
+    elapsedMs: result.elapsedMs,
+    transport: result.transport
+  }, null, 2));
 } catch (err) {
   await host.saveDiagnostics();
-  console.error('\nMVP failed:', err?.stack || err);
+  console.error('\nRuntime failed:', err?.stack || err);
   process.exitCode = 1;
 } finally {
   await host.close();
