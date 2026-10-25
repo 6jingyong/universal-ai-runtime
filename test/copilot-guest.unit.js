@@ -13,15 +13,16 @@ class MockHost {
     this.prompt = '';
     this.sent = false;
     this.page = {
-      url: () => 'https://copilot.microsoft.com/',
+      url: () => 'https://copilot.cloud.microsoft/',
+      title: async () => 'Copilot | AI chat for work',
       waitForTimeout: async () => { this.tick += 1; }
     };
   }
   async goto(url) { this.page.url = () => url; }
   async firstVisible(selectors) {
     const joined = selectors.join(' ');
-    if (joined.includes('userInput')) return new MockLocator('composer', this);
-    if (joined.includes('submit-button')) return new MockLocator('send', this);
+    if (joined.includes('unauth-prompt-input') || joined.includes('userInput')) return new MockLocator('composer', this);
+    if (joined.includes('unauth-prompt-submit') || joined.includes('submit-button')) return new MockLocator('send', this);
     if (joined.includes('stop-button')) return this.sent && this.tick < 3 ? new MockLocator('stop', this) : null;
     if (joined.includes('action-bar')) return this.sent && this.tick >= 3 ? new MockLocator('done', this) : null;
     return null;
