@@ -2,6 +2,7 @@ import { WebProvider } from '../core/web-provider.js';
 
 const SELECTORS = {
   composer: [
+    '#unauth-prompt-input',
     '#userInput',
     '[data-testid="composer-input"]',
     'textarea[placeholder*="Message Copilot" i]',
@@ -9,6 +10,7 @@ const SELECTORS = {
     'div[contenteditable="true"][role="textbox"]'
   ],
   send: [
+    '#unauth-prompt-submit',
     '[data-testid="submit-button"]',
     'button[aria-label="Submit message"]',
     'button[aria-label*="Send" i]'
@@ -35,7 +37,7 @@ export class CopilotGuestProvider extends WebProvider {
   constructor() {
     super('copilot-guest', 'Microsoft Copilot Guest');
     this.url = 'https://copilot.cloud.microsoft/';
-    this.maxPromptChars = 9_000;
+    this.maxPromptChars = 1_900;
   }
 
   async probe(host) {
@@ -80,6 +82,14 @@ export class CopilotGuestProvider extends WebProvider {
 
     while (Date.now() - startedAt < maxMs) {
       await host.page.waitForTimeout(350);
+
+      const currentUrl = host.page.url();
+      const title = await host.page.title().catch(() => '');
+      if (/login|signin|sign-in/i.test(currentUrl) || /sign in/i.test(title)) {
+        const error = new Error(`Copilot anonymous prompt requires authentication; redirected to ${currentUrl}`);
+        error.code = 'AUTH_REQUIRED';
+        throw error;
+      }
 
       const now = await host.visibleTexts(SELECTORS.response);
       const candidate = now.length > before.length ? now.at(-1) : now.at(-1) || '';
