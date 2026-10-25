@@ -1,0 +1,60 @@
+name: Anonymous Web E2E
+
+on:
+  pull_request:
+    paths:
+      - 'src/runtime.js'
+      - 'src/core/**'
+      - 'src/hosts/**'
+      - 'src/providers/gemini-guest.js'
+      - 'src/providers/qwen-guest.js'
+      - 'test/anonymous-web.e2e.js'
+      - 'package.json'
+      - '.github/workflows/anonymous-web-e2e.yml'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [gemini, qwen]
+
+    env:
+      CHROME_PATH: /usr/bin/google-chrome
+      TARGET: ${{ matrix.target }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Static checks
+        run: npm run check
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Verify system Chrome
+        run: google-chrome --version
+
+      - name: Run live anonymous E2E
+        run: npm run test:e2e
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: anonymous-web-${{ matrix.target }}
+          path: artifacts/anonymous-web/${{ matrix.target }}/
+          if-no-files-found: warn
+          retention-days: 7
