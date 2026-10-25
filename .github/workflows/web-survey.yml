@@ -1,12 +1,6 @@
 name: Mainstream Web Survey
 
 on:
-  pull_request:
-    paths:
-      - 'test/web-survey.e2e.js'
-      - 'package.json'
-      - '.github/workflows/web-survey.yml'
-      - 'docs/validation-log.md'
   workflow_dispatch:
 
 jobs:
