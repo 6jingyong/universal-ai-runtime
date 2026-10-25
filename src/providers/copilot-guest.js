@@ -34,7 +34,7 @@ const SELECTORS = {
 export class CopilotGuestProvider extends WebProvider {
   constructor() {
     super('copilot-guest', 'Microsoft Copilot Guest');
-    this.url = 'https://copilot.microsoft.com/';
+    this.url = 'https://copilot.cloud.microsoft/';
     this.maxPromptChars = 9_000;
   }
 
