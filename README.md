@@ -1,10 +1,22 @@
 # Universal AI Runtime
 
-Early prototype for a user-authorized AI runtime that lets ordinary apps reuse AI access the user already has, starting with anonymous web AI.
+Early prototype for a user-authorized AI runtime that lets ordinary apps reuse AI access the user already has, with web sessions as the first transport.
 
-The first MVP is intentionally narrow: prove that an app can treat the public Microsoft Copilot web UI as a zero-config text backend without accounts, API keys, MCP, or private browser cookies.
+The first MVP is intentionally narrow: determine whether a public AI web surface can act as a zero-config text backend without API keys, MCP, or private browser-cookie extraction.
 
-## Current MVP
+## First live result: Copilot
+
+As of the current E2E probe, `https://copilot.cloud.microsoft/` exposes a signed-out prompt box (`#unauth-prompt-input`), but submitting a prompt redirects to Microsoft OAuth sign-in. The runtime therefore classifies the current Copilot signed-out channel as:
+
+```text
+ui_available: true
+auth_required: true
+anonymous_chat: false
+```
+
+This is useful rather than a dead end: provider capability must be detected from live behavior instead of assumed from documentation or branding.
+
+## Current prototype
 
 ```text
 App / CLI
@@ -13,9 +25,11 @@ CopilotGuestProvider
    ↓
 Web Host
    ↓
-copilot.microsoft.com
+copilot.cloud.microsoft
    ↓
-anonymous prompt + response
+capability probe
+   ├─ anonymous response → anonymous_chat
+   └─ OAuth redirect      → auth_required
 ```
 
 The provider and browser host are separate on purpose. Provider semantics should later be reusable across:
@@ -36,6 +50,8 @@ npm test
 npm run probe -- "Reply with exactly: COPILOT_GUEST_OK"
 ```
 
+If a system Chrome is available, set `CHROME_PATH` to avoid downloading another browser.
+
 By default the probe is headless. Use a visible browser with:
 
 ```bash
@@ -50,13 +66,13 @@ npm test
 npm run test:e2e
 ```
 
-The E2E test opens the real public Copilot website without authentication. On failure it stores a screenshot, page HTML, URL, and title under `artifacts/`.
+The E2E test opens the real public Copilot surface without authentication and classifies the live channel. `AUTH_REQUIRED` is a valid capability result; unexpected failures still store a screenshot, page HTML, URL, and title under `artifacts/`.
 
-GitHub Actions runs the same E2E probe on pull requests. A failure can therefore mean either an adapter regression or a provider-side/network/anti-automation restriction; diagnostics are uploaded as a workflow artifact to distinguish those cases.
+GitHub Actions runs the same live probe on pull requests using the runner's preinstalled Chrome.
 
 ## Deliberate non-goals for v0
 
-- no login or account-cookie extraction;
+- no account-cookie extraction;
 - no API keys;
 - no MCP;
 - no tools or skills;
@@ -65,7 +81,7 @@ GitHub Actions runs the same E2E probe on pull requests. A failure can therefore
 
 ## Next validation target
 
-If Copilot Guest works reliably, add a second anonymous provider such as Gemini Guest using the same `WebProvider` contract. That is the first real test that the abstraction is provider-independent.
+Add another signed-out provider, likely Gemini or ChatGPT, using the same `WebProvider` contract. A real anonymous response from a second provider would validate the positive zero-config path; Copilot already validates the `auth_required` capability path.
 
 ## License
 
