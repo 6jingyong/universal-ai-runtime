@@ -42,16 +42,23 @@ export class QwenGuestProvider extends WebProvider {
 
   async resolveAgeGate(host) {
     const gateText = host.page.getByText(/confirm your age to continue/i).first();
-    if (!await gateText.isVisible().catch(() => false)) return false;
+    const deadline = Date.now() + 2500;
 
-    const continueButton = host.page.getByRole('button', { name: /continue/i }).last();
-    if (!await continueButton.isVisible().catch(() => false)) {
-      throw new Error('Qwen age gate detected but Continue button was not found');
+    while (Date.now() < deadline) {
+      if (await gateText.isVisible().catch(() => false)) {
+        const continueButton = host.page.getByRole('button', { name: /continue/i }).last();
+        if (!await continueButton.isVisible().catch(() => false)) {
+          throw new Error('Qwen age gate detected but Continue button was not found');
+        }
+
+        await continueButton.click();
+        await host.page.waitForTimeout(900);
+        return true;
+      }
+      await host.page.waitForTimeout(250);
     }
 
-    await continueButton.click();
-    await host.page.waitForTimeout(900);
-    return true;
+    return false;
   }
 
   async ask(host, prompt) {
