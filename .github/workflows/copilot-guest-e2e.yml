@@ -12,9 +12,11 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     permissions:
       contents: read
+    env:
+      CHROME_PATH: /usr/bin/google-chrome
 
     steps:
       - name: Checkout
@@ -28,8 +30,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Verify system Chrome
+        run: google-chrome --version
 
       - name: Static checks
         run: npm run check
