@@ -1,0 +1,53 @@
+name: Qwen Account Session
+
+on:
+  pull_request:
+    paths:
+      - 'src/runtime.js'
+      - 'src/hosts/persistent-playwright-host.js'
+      - 'src/providers/qwen-account.js'
+      - 'src/providers/qwen-guest.js'
+      - 'test/account-session.e2e.js'
+      - 'package.json'
+      - '.github/workflows/qwen-account-session.yml'
+  workflow_dispatch:
+
+jobs:
+  substrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      CHROME_PATH: /usr/bin/google-chrome
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Static checks
+        run: npm run check
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Verify system Chrome
+        run: google-chrome --version
+
+      - name: Validate Qwen persistent account-session substrate
+        run: npm run test:account:e2e
+
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qwen-account-session
+          path: artifacts/account-session/qwen/
+          if-no-files-found: warn
+          retention-days: 7
