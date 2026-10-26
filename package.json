@@ -6,9 +6,12 @@
   "description": "Prototype runtime for reusing user-accessible AI web sessions across apps.",
   "scripts": {
     "probe": "node src/cli.js",
-    "check": "node --check src/cli.js && node --check src/core/web-provider.js && node --check src/hosts/playwright-host.js && node --check src/providers/copilot-guest.js && node --check test/copilot-guest.unit.js && node --check test/copilot-guest.e2e.js",
-    "test": "node test/copilot-guest.unit.js",
-    "test:e2e": "node test/copilot-guest.e2e.js"
+    "check": "node --check src/cli.js && node --check src/runtime.js && node --check src/core/web-provider.js && node --check src/core/web-chat-utils.js && node --check src/hosts/playwright-host.js && node --check src/hosts/persistent-playwright-host.js && node --check src/providers/gemini-guest.js && node --check src/providers/qwen-guest.js && node --check src/providers/qwen-account.js && node --check src/providers/copilot-guest.js && node --check test/runtime.unit.js && node --check test/anonymous-web.e2e.js && node --check test/account-session.e2e.js && node --check test/copilot-guest.unit.js && node --check test/copilot-guest.e2e.js && node --check test/web-survey.e2e.js",
+    "test": "node test/runtime.unit.js && node test/copilot-guest.unit.js",
+    "test:e2e": "node test/anonymous-web.e2e.js",
+    "test:account:e2e": "node test/account-session.e2e.js",
+    "test:copilot:e2e": "node test/copilot-guest.e2e.js",
+    "survey:web": "node test/web-survey.e2e.js"
   },
   "dependencies": {
     "playwright": "^1.57.0"
