@@ -1,9 +1,9 @@
 import { GeminiGuestProvider } from './providers/gemini-guest.js';
-import { QwenGuestProvider } from './providers/qwen-guest.js';
+import { QwenAccountProvider } from './providers/qwen-account.js';
 
 const DEFAULT_PROVIDERS = {
   gemini: new GeminiGuestProvider(),
-  qwen: new QwenGuestProvider()
+  qwen: new QwenAccountProvider()
 };
 
 export function providerForRegion(region = 'global') {
@@ -41,7 +41,7 @@ export class AIRuntime {
     const probe = await provider.probe(this.host);
     if (!probe.ready) {
       const error = new Error(`${provider.label} is not ready: ${probe.capability}`);
-      error.code = 'PROVIDER_NOT_READY';
+      error.code = probe.capability === 'login_required' ? 'LOGIN_REQUIRED' : 'PROVIDER_NOT_READY';
       error.probe = probe;
       throw error;
     }
